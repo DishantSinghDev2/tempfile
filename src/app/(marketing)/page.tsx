@@ -4,6 +4,8 @@ import { HeroSection } from "@/components/marketing/hero-section";
 import { FeaturesSection } from "@/components/marketing/features-section";
 import { HowItWorks } from "@/components/marketing/how-it-works";
 import { CTASection } from "@/components/marketing/cta-section";
+import { auth } from "@/auth";
+import { getPlan } from "@/lib/plans";
 
 export const metadata: Metadata = {
   title: "Temp File — Instant Secure File Sharing",
@@ -12,10 +14,18 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://tempfile.io" },
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await auth();
+  const planTier = (session?.user as any)?.planTier || "free";
+  const plan = getPlan(planTier);
+
   return (
     <>
-      <HeroSection />
+      <HeroSection 
+        maxSizeMb={plan.maxFileSizeMb} 
+        expiryHours={plan.maxExpiryDays * 24} 
+        planTier={planTier} 
+      />
       <FeaturesSection />
       <HowItWorks />
       <CTASection />

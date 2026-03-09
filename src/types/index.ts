@@ -54,6 +54,19 @@ export interface SharePageData {
   maxDownloads: number | null;
   isExpired: boolean;
   requiresPassword: boolean;
+  form?: {
+    id: string;
+    title: string;
+    description: string | null;
+    fields: any[];
+    required: boolean;
+    showAt: "before" | "after";
+  } | null;
+  customization?: {
+    theme?: any;
+    donateButtonUrl?: string | null;
+    customText?: string | null;
+  } | null;
 }
 
 export type Plan = {

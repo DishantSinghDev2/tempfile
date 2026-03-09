@@ -231,7 +231,8 @@ export async function confirmUpload(shareId: string): Promise<void> {
 
 export async function getFileForDownload(
   shareId: string,
-  downloaderIp: string
+  downloaderIp: string,
+  password?: string | null
 ): Promise<{ downloadUrl: string; file: SharePageData } | null> {
   const db = getDb();
   const { env } = getCloudflareContext();
@@ -250,6 +251,12 @@ export async function getFileForDownload(
   if (results.length === 0) return null;
 
   const file = results[0];
+
+  // Check password if required
+  if (file.passwordHash && file.passwordHash !== password) {
+    throw new Error("Invalid password");
+  }
+
   const now = new Date();
 
   // Check expiry

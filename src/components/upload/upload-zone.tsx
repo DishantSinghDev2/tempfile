@@ -14,6 +14,7 @@ import {
   Send,
   Mail,
   Loader2,
+  Lock,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { computeSHA256, formatBytes, formatCountdown } from "@/lib/utils";
@@ -38,6 +39,7 @@ type UploadState =
 interface UploadZoneProps {
   maxSizeMb?: number;
   expiryHours?: number;
+  planTier?: string;
 }
 
 const SHARE_BASE = typeof window !== "undefined" ? window.location.origin : "";
@@ -45,11 +47,14 @@ const SHARE_BASE = typeof window !== "undefined" ? window.location.origin : "";
 export function UploadZone({
   maxSizeMb = 100,
   expiryHours = 24,
+  planTier = "free",
 }: UploadZoneProps) {
   const [state, setState] = useState<UploadState>({ phase: "idle" });
   const [dragOver, setDragOver] = useState(false);
   const [email, setEmail] = useState("");
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const turnstileRef = useRef<any>(null);
@@ -137,6 +142,7 @@ export function UploadZone({
             sha256,
             expiryHours,
             turnstileToken,
+            password: password || null,
           }),
         });
 
@@ -347,6 +353,33 @@ export function UploadZone({
                     </span>
                   ))}
                 </div>
+
+                {planTier !== "free" && (
+                  <div className="w-full max-w-[200px] space-y-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowPassword(!showPassword);
+                      }}
+                      className="w-full text-[9px] font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <Lock className="h-3 w-3" />
+                      {showPassword ? "Remove password" : "Add password"}
+                    </button>
+                    {showPassword && (
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="Password..."
+                          className="w-full h-7 px-2 text-[10px] font-mono bg-background border border-border rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <Turnstile
                   ref={turnstileRef}

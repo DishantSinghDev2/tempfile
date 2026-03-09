@@ -11,18 +11,27 @@ export async function GET(
 ): Promise<NextResponse> {
   const { shareId } = await params;
   const ip = getClientIp(request);
+  const password = request.nextUrl.searchParams.get("password");
 
   await trackDownloadBurst(ip);
 
-  const result = await getFileForDownload(shareId, ip);
+  try {
+    const result = await getFileForDownload(shareId, ip, password);
 
-  if (!result) {
+    if (!result) {
+      return NextResponse.json(
+        { success: false, error: "File not found, expired, or download limit reached", code: "FILE_NOT_FOUND" },
+        { status: 404 }
+      );
+    }
+
+    // Return redirect to signed URL (never proxy bytes through Worker)
+    return NextResponse.redirect(result.downloadUrl, 302);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Download failed";
     return NextResponse.json(
-      { success: false, error: "File not found, expired, or download limit reached", code: "FILE_NOT_FOUND" },
-      { status: 404 }
+      { success: false, error: message, code: "DOWNLOAD_ERROR" },
+      { status: 403 }
     );
   }
-
-  // Return redirect to signed URL (never proxy bytes through Worker)
-  return NextResponse.redirect(result.downloadUrl, 302);
 }

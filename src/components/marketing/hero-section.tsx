@@ -21,7 +21,17 @@ const stats = [
   { value: "0", label: "Bytes proxied" },
 ];
 
-export function HeroSection() {
+interface HeroSectionProps {
+  maxSizeMb?: number;
+  expiryHours?: number;
+  planTier?: string;
+}
+
+export function HeroSection({
+  maxSizeMb = 100,
+  expiryHours = 24,
+  planTier = "free",
+}: HeroSectionProps) {
   return (
     <section className="relative min-h-[85vh] flex items-center justify-center py-24 px-6 overflow-hidden">
       {/* Dot grid background */}
@@ -96,7 +106,7 @@ export function HeroSection() {
           transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           className="w-full"
         >
-          <UploadZone maxSizeMb={100} expiryHours={24} />
+          <UploadZone maxSizeMb={maxSizeMb} expiryHours={expiryHours} planTier={planTier} />
         </motion.div>
 
         {/* Stats row */}
