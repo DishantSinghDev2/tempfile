@@ -7,7 +7,7 @@ import { PLANS, getPlan } from "@/lib/plans";
 import { BillingClient } from "./billing-client";
 
 export const metadata: Metadata = {
-  title: "Billing — TempFile",
+  title: "Billing — Temp File",
   robots: { index: false },
 };
 

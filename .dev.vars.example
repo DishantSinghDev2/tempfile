@@ -30,3 +30,4 @@ PADDLE_WEBHOOK_SECRET="your-paddle-webhook-secret"
 # DITBLOGS SDK
 # ============================================================
 DITBLOGS_API_KEY="your-ditblogs-api-key"
+RESEND_API_KEY=""

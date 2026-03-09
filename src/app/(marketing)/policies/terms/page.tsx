@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — TempFile",
-  description: "TempFile Terms of Service. Rules for using the platform.",
+  title: "Terms of Service — Temp File",
+  description: "Temp File Terms of Service. Rules for using the platform.",
   alternates: { canonical: "https://tempfile.io/policies/terms" },
 };
 
@@ -12,12 +12,12 @@ const sections = [
   {
     title: "Acceptance of Terms",
     content:
-      "By accessing or using TempFile (the 'Service'), you agree to be bound by these Terms. If you do not agree, do not use the Service. We may update these Terms at any time; continued use after changes constitutes acceptance.",
+      "By accessing or using Temp File (the 'Service'), you agree to be bound by these Terms. If you do not agree, do not use the Service. We may update these Terms at any time; continued use after changes constitutes acceptance.",
   },
   {
     title: "Permitted Use",
     content:
-      "You may use TempFile to upload, share, and transfer files for lawful purposes only. You are solely responsible for the content you upload. You must not use the Service for any illegal purpose, including distributing copyrighted material without permission, sharing malware or malicious code, uploading content that sexually exploits minors, or any activity that violates applicable law.",
+      "You may use Temp File to upload, share, and transfer files for lawful purposes only. You are solely responsible for the content you upload. You must not use the Service for any illegal purpose, including distributing copyrighted material without permission, sharing malware or malicious code, uploading content that sexually exploits minors, or any activity that violates applicable law.",
   },
   {
     title: "Prohibited Content",
@@ -27,7 +27,7 @@ const sections = [
   {
     title: "Service Availability",
     content:
-      "TempFile is provided on an 'as-is' basis. We do not guarantee 100% uptime. Files are ephemeral by design — they will be deleted at expiry. Do not use TempFile as your only copy of important files. We are not liable for data loss resulting from scheduled or unscheduled deletions.",
+      "Temp File is provided on an 'as-is' basis. We do not guarantee 100% uptime. Files are ephemeral by design — they will be deleted at expiry. Do not use Temp File as your only copy of important files. We are not liable for data loss resulting from scheduled or unscheduled deletions.",
   },
   {
     title: "Subscriptions and Billing",
@@ -37,12 +37,12 @@ const sections = [
   {
     title: "API and Developer Use",
     content:
-      "The TempFile API is available to Pro and Enterprise subscribers. You must not use the API to circumvent platform limits, build competing services using our infrastructure, or violate these Terms. We may rate-limit or revoke API access at our discretion.",
+      "The Temp File API is available to Pro and Enterprise subscribers. You must not use the API to circumvent platform limits, build competing services using our infrastructure, or violate these Terms. We may rate-limit or revoke API access at our discretion.",
   },
   {
     title: "Limitation of Liability",
     content:
-      "To the maximum extent permitted by law, TempFile and its operators shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Service. Our total liability for any claim shall not exceed the amount you paid us in the 12 months preceding the claim.",
+      "To the maximum extent permitted by law, Temp File and its operators shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Service. Our total liability for any claim shall not exceed the amount you paid us in the 12 months preceding the claim.",
   },
   {
     title: "Governing Law",
@@ -67,7 +67,7 @@ export default function TermsPage() {
         </h1>
         <p className="text-base text-muted-foreground leading-relaxed mt-3 max-w-xl">
           Last updated: January 1, 2025. Please read these Terms carefully
-          before using TempFile.
+          before using Temp File.
         </p>
       </div>
 

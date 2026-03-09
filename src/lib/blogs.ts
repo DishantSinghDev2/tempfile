@@ -1,51 +1,27 @@
 // src/lib/blogs.ts
-// DITBlogs SDK integration - https://www.npmjs.com/package/@dishistech/blogs-sdk
+import { DITBlogsClient } from "@dishistech/blogs-sdk";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-// The SDK is initialized with your API key
-// All blog posts are managed through the DITBlogs platform
-
-let blogsClient: ReturnType<typeof createBlogsClient> | null = null;
-
-function createBlogsClient(apiKey: string) {
-  // @dishistech/blogs-sdk client initialization
-  // Lazy import to avoid issues in edge runtime during build
-  return {
-    apiKey,
-    baseUrl: "https://api.ditblogs.com",
-    async getPosts(params?: {
-      page?: number;
-      limit?: number;
-      category?: string;
-    }) {
-      const url = new URL(`${this.baseUrl}/posts`);
-      if (params?.page) url.searchParams.set("page", String(params.page));
-      if (params?.limit) url.searchParams.set("limit", String(params.limit));
-      if (params?.category) url.searchParams.set("category", params.category);
-
-      const res = await fetch(url.toString(), {
-        headers: { Authorization: `Bearer ${this.apiKey}` },
-      });
-      if (!res.ok) throw new Error("Failed to fetch blog posts");
-      return res.json();
-    },
-    async getPost(slug: string) {
-      const res = await fetch(`${this.baseUrl}/posts/${slug}`, {
-        headers: { Authorization: `Bearer ${this.apiKey}` },
-      });
-      if (!res.ok) return null;
-      return res.json();
-    },
-  };
-}
+let blogsClient: DITBlogsClient | null = null;
 
 export function getBlogsClient() {
-  const apiKey = process.env.DITBLOGS_API_KEY;
+  let apiKey: string | undefined;
+  
+  try {
+    const { env } = getCloudflareContext();
+    apiKey = env.DITBLOGS_API_KEY;
+  } catch (err) {
+    // Fallback for build time or non-cloudflare environments
+    apiKey = process.env.DITBLOGS_API_KEY;
+  }
+  
   if (!apiKey) {
     console.warn("DITBLOGS_API_KEY not set, blog features disabled");
     return null;
   }
+  
   if (!blogsClient) {
-    blogsClient = createBlogsClient(apiKey);
+    blogsClient = new DITBlogsClient(apiKey);
   }
   return blogsClient;
 }
@@ -73,7 +49,11 @@ export async function getBlogPosts(params?: {
   if (!client) return { posts: [], total: 0 };
 
   try {
-    return await client.getPosts(params);
+    const response = await client.getPosts(params);
+    return {
+      posts: response.posts as unknown as BlogPost[],
+      total: response.pagination.total,
+    };
   } catch (err) {
     console.error("Failed to fetch blog posts:", err);
     return { posts: [], total: 0 };
@@ -85,7 +65,7 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
   if (!client) return null;
 
   try {
-    return await client.getPost(slug);
+    return (await client.getPost(slug)) as unknown as BlogPost;
   } catch (err) {
     console.error("Failed to fetch blog post:", err);
     return null;

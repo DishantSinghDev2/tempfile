@@ -4,7 +4,7 @@ import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Auth Error — TempFile",
+  title: "Auth Error — Temp File",
   robots: { index: false },
 };
 

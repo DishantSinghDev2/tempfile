@@ -21,6 +21,8 @@ export interface UploadState {
   expiresAt?: string;
   instant?: boolean;
   error?: string;
+  speedBps?: number;
+  timeLeftSeconds?: number;
 }
 
 export function useUpload() {
@@ -35,6 +37,8 @@ export function useUpload() {
       options?: {
         expiryHours?: number;
         maxDownloads?: number | null;
+        turnstileToken?: string;
+        password?: string | null;
       }
     ) => {
       setState({ status: "hashing", progress: 0 });
@@ -55,6 +59,8 @@ export function useUpload() {
             sha256,
             expiryHours: options?.expiryHours ?? 24,
             maxDownloads: options?.maxDownloads ?? null,
+            turnstileToken: options?.turnstileToken,
+            password: options?.password,
           }),
         });
 
@@ -79,13 +85,38 @@ export function useUpload() {
         // Step 3: Upload to GCS
         await new Promise<void>((resolve, reject) => {
           const xhr = new XMLHttpRequest();
+          const startTime = Date.now();
+          let lastLoaded = 0;
+          let lastTime = startTime;
+
           xhr.upload.addEventListener("progress", (e) => {
             if (e.lengthComputable) {
-              setState((s) => ({
-                ...s,
-                status: "uploading",
-                progress: Math.round((e.loaded / e.total) * 100),
-              }));
+              const now = Date.now();
+              const timeDiff = (now - lastTime) / 1000; // in seconds
+              
+              if (timeDiff > 0.5) { // Update speed every 500ms for stability
+                const bytesDiff = e.loaded - lastLoaded;
+                const speedBps = bytesDiff / timeDiff;
+                const remainingBytes = e.total - e.loaded;
+                const timeLeftSeconds = speedBps > 0 ? remainingBytes / speedBps : 0;
+                
+                setState((s) => ({
+                  ...s,
+                  status: "uploading",
+                  progress: Math.round((e.loaded / e.total) * 100),
+                  speedBps,
+                  timeLeftSeconds
+                }));
+                
+                lastLoaded = e.loaded;
+                lastTime = now;
+              } else {
+                 setState((s) => ({
+                  ...s,
+                  status: "uploading",
+                  progress: Math.round((e.loaded / e.total) * 100),
+                }));
+              }
             }
           });
           xhr.addEventListener("load", () => {

@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { SettingsClient } from "./settings-client";
 
 export const metadata: Metadata = {
-  title: "Settings — TempFile",
+  title: "Settings — Temp File",
   robots: { index: false },
 };
 

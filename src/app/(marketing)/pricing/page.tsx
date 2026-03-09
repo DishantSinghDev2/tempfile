@@ -9,7 +9,7 @@ import { ShieldCheck, Lock, Globe } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Pricing — TempFile",
+  title: "Pricing — Temp File",
   description:
     "Simple, transparent pricing for individuals, developers, and enterprises. Start free, upgrade when you need more. Powered by Paddle.",
   alternates: { canonical: "https://tempfile.io/pricing" },

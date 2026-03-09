@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — TempFile",
-  description: "TempFile privacy policy. How we handle your data.",
+  title: "Privacy Policy — Temp File",
+  description: "Temp File privacy policy. How we handle your data.",
 };
 
 const sections = [

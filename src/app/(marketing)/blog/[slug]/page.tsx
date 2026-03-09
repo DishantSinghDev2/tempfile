@@ -12,10 +12,10 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await getBlogPost(slug);
-  if (!post) return { title: "Post Not Found | TempFile" };
+  if (!post) return { title: "Post Not Found | Temp File" };
 
   return {
-    title: `${post.title} — TempFile Blog`,
+    title: `${post.title} — Temp File Blog`,
     description: post.description,
     alternates: { canonical: `https://tempfile.io/blog/${slug}` },
     openGraph: {

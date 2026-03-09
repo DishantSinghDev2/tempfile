@@ -5,9 +5,9 @@ import { FadeIn } from "@/components/ui/fade-in";
 import { SectionMarker } from "@/components/ui/section-marker";
 
 export const metadata: Metadata = {
-  title: "About — TempFile",
+  title: "About — Temp File",
   description:
-    "TempFile is built on Cloudflare Workers and Google Cloud Storage. Learn about our architecture, mission, and cost-efficient design.",
+    "Temp File is built on Cloudflare Workers and Google Cloud Storage. Learn about our architecture, mission, and cost-efficient design.",
   alternates: { canonical: "https://tempfile.io/about" },
 };
 
@@ -24,7 +24,7 @@ export default function AboutPage() {
               Built for the real cost of cloud.
             </h1>
             <p className="text-base text-muted-foreground leading-relaxed">
-              TempFile is an open architecture for ephemeral file sharing. Every
+              Temp File is an open architecture for ephemeral file sharing. Every
               design decision — from SHA-256 dedup to early-delete triggers — is
               engineered to minimize GCP egress costs while maximizing user
               experience.
@@ -100,7 +100,7 @@ export default function AboutPage() {
           <SectionMarker index={3} total={3} label="Get started" />
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground leading-relaxed">
-              TempFile is free to use with no account required. For larger
+              Temp File is free to use with no account required. For larger
               files, longer expiry, and API access, check out our paid plans.
             </p>
             <div className="flex gap-3">

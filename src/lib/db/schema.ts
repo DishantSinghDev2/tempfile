@@ -21,6 +21,7 @@ export const users = sqliteTable("users", {
   creditsRemaining: integer("credits_remaining").notNull().default(0),
   creditsResetAt: integer("credits_reset_at", { mode: "timestamp_ms" }),
   activeStorageBytes: integer("active_storage_bytes").notNull().default(0),
+  defaultCustomization: text("default_customization"), // JSON
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .$defaultFn(() => new Date()),
@@ -155,9 +156,57 @@ export const creditTransactions = sqliteTable("credit_transactions", {
     .$defaultFn(() => new Date()),
 });
 
+export const fileCustomizations = sqliteTable("file_customizations", {
+  id: text("id").primaryKey(),
+  fileId: text("file_id")
+    .notNull()
+    .references(() => files.id, { onDelete: "cascade" }),
+  theme: text("theme"), // JSON
+  donateButtonUrl: text("donate_button_url"),
+  customText: text("custom_text"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export const fileForms = sqliteTable("file_forms", {
+  id: text("id").primaryKey(),
+  fileId: text("file_id")
+    .notNull()
+    .references(() => files.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  fields: text("fields").notNull(), // JSON array of field definitions
+  required: integer("required", { mode: "boolean" }).notNull().default(false),
+  showAt: text("show_at", { enum: ["before", "after"] })
+    .notNull()
+    .default("before"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export const formSubmissions = sqliteTable("form_submissions", {
+  id: text("id").primaryKey(),
+  formId: text("form_id")
+    .notNull()
+    .references(() => fileForms.id, { onDelete: "cascade" }),
+  fileId: text("file_id")
+    .notNull()
+    .references(() => files.id, { onDelete: "cascade" }),
+  data: text("data").notNull(), // JSON
+  downloaderIp: text("downloader_ip"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type File = typeof files.$inferSelect;
 export type NewFile = typeof files.$inferInsert;
 export type Subscription = typeof subscriptions.$inferSelect;
 export type CreditTransaction = typeof creditTransactions.$inferSelect;
+export type FileCustomization = typeof fileCustomizations.$inferSelect;
+export type FileForm = typeof fileForms.$inferSelect;
+export type FormSubmission = typeof formSubmissions.$inferSelect;

@@ -6,7 +6,7 @@ import { formatBytes, formatCountdown } from "@/lib/utils";
 import { FileRow } from "./file-row";
 
 export const metadata: Metadata = {
-  title: "My Files — TempFile",
+  title: "My Files — Temp File",
   robots: { index: false },
 };
 

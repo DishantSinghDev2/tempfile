@@ -1,0 +1,94 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Temp File API",
+    "description": "Powerful, ephemeral file sharing API. Upload, share, and manage files programmatically.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Temp File Support",
+      "url": "https://tfile.freecustom.email/docs"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://tfile.freecustom.email/api",
+      "description": "Production server"
+    }
+  ],
+  "paths": {
+    "/upload": {
+      "post": {
+        "summary": "Request upload URL",
+        "description": "Starts the upload process by requesting a signed GCS URL and performing deduplication checks.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["filename", "mimeType", "size", "sha256", "turnstileToken"],
+                "properties": {
+                  "filename": { "type": "string", "example": "project.zip" },
+                  "mimeType": { "type": "string", "example": "application/zip" },
+                  "size": { "type": "integer", "example": 1048576 },
+                  "sha256": { "type": "string", "example": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" },
+                  "expiryHours": { "type": "integer", "default": 24 },
+                  "turnstileToken": { "type": "string", "description": "Cloudflare Turnstile response token" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Upload URL generated or file deduped",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "shareId": { "type": "string" },
+                        "uploadUrl": { "type": "string" },
+                        "alreadyExists": { "type": "boolean" },
+                        "expiresAt": { "type": "string", "format": "date-time" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/files/{shareId}": {
+      "get": {
+        "summary": "Get file metadata",
+        "parameters": [
+          {
+            "name": "shareId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "File metadata" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

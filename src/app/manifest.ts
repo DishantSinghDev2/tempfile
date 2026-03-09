@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "TempFile — Instant Secure File Sharing",
-    short_name: "TempFile",
+    name: "Temp File — Instant Secure File Sharing",
+    short_name: "Temp File",
     description:
       "Share files instantly with auto-expiring links. No account required.",
     start_url: "/",

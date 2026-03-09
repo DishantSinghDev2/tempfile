@@ -38,7 +38,7 @@ export function DashboardNav({ user }: Props) {
             <Upload className="h-3 w-3 text-background" strokeWidth={2.5} />
           </div>
           <span className="font-mono text-sm font-semibold text-foreground">
-            TempFile
+            Temp File
           </span>
         </Link>
       </div>

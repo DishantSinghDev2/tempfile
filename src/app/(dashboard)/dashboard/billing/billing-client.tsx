@@ -1,12 +1,13 @@
 // src/app/(dashboard)/dashboard/billing/billing-client.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Check, Loader2, ShieldCheck } from "lucide-react";
 import toast from "react-hot-toast";
 import type { Plan, PlanTier } from "@/types";
 import { SiVisa, SiMastercard, SiPaypal } from "react-icons/si";
 import { Lock, Globe } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 interface Props {
   currentPlanTier: PlanTier;
@@ -23,16 +24,20 @@ export function BillingClient({
   userEmail,
   userId,
 }: Props) {
-  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
+  const searchParams = useSearchParams();
+  const [billing, setBilling] = useState<"monthly" | "yearly">(
+    (searchParams.get("interval") as "monthly" | "yearly") || "monthly"
+  );
   const [loading, setLoading] = useState<string | null>(null);
 
-  const handleUpgrade = async (plan: Plan) => {
+  const handleUpgrade = async (plan: Plan, selectedBilling?: "monthly" | "yearly") => {
     if (plan.tier === "free" || plan.tier === currentPlanTier) return;
 
     setLoading(plan.id);
     try {
+      const interval = selectedBilling || billing;
       const priceId =
-        billing === "monthly"
+        interval === "monthly"
           ? plan.paddlePriceIdMonthly
           : plan.paddlePriceIdYearly;
 
@@ -51,6 +56,17 @@ export function BillingClient({
       setLoading(null);
     }
   };
+
+  useEffect(() => {
+    const planId = searchParams.get("plan");
+    const interval = searchParams.get("interval") as "monthly" | "yearly";
+    if (planId) {
+      const plan = plans.find((p) => p.id === planId);
+      if (plan && plan.tier !== currentPlanTier) {
+        handleUpgrade(plan, interval || undefined);
+      }
+    }
+  }, []);
 
   const handleCancel = async () => {
     if (!subscriptionId) return;

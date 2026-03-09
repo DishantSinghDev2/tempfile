@@ -4,8 +4,8 @@ import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Refund Policy — TempFile",
-  description: "TempFile 7-day money-back guarantee and refund policy.",
+  title: "Refund Policy — Temp File",
+  description: "Temp File 7-day money-back guarantee and refund policy.",
 };
 
 export default function RefundPage() {
@@ -19,7 +19,7 @@ export default function RefundPage() {
           Refund Policy
         </h1>
         <p className="text-base text-muted-foreground leading-relaxed mt-3 max-w-xl">
-          We stand behind TempFile. If it doesn't work for you, we'll refund
+          We stand behind Temp File. If it doesn't work for you, we'll refund
           you — no awkward questions.
         </p>
       </div>

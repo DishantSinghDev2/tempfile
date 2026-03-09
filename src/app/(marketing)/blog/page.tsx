@@ -6,9 +6,9 @@ import { FadeIn } from "@/components/ui/fade-in";
 import { SectionMarker } from "@/components/ui/section-marker";
 
 export const metadata: Metadata = {
-  title: "Blog — TempFile",
+  title: "Blog — Temp File",
   description:
-    "Tips, guides, and updates from the TempFile team. Learn about secure file sharing, privacy, and developer tools.",
+    "Tips, guides, and updates from the Temp File team. Learn about secure file sharing, privacy, and developer tools.",
   alternates: { canonical: "https://tempfile.io/blog" },
 };
 

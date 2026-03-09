@@ -7,8 +7,8 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://tempfile.io"),
   title: {
-    default: "TempFile — Instant Secure File Sharing",
-    template: "%s | TempFile",
+    default: "Temp File — Instant Secure File Sharing",
+    template: "%s | Temp File",
   },
   description:
     "Share files instantly with auto-expiring links. No signup required. Upload up to 100MB free. Direct to CDN — zero proxy, zero latency. Built for developers, teams, and everyone in between.",
@@ -23,15 +23,15 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     type: "website",
-    title: "TempFile — Instant Secure File Sharing",
+    title: "Temp File — Instant Secure File Sharing",
     description:
       "Share files instantly with auto-expiring links. No signup required.",
-    siteName: "TempFile",
+    siteName: "Temp File",
     images: [{ url: "/og.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "TempFile — Instant Secure File Sharing",
+    title: "Temp File — Instant Secure File Sharing",
     description: "Share files instantly with auto-expiring links.",
   },
   robots: {

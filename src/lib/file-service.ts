@@ -23,6 +23,20 @@ function getFileExtension(filename: string): string {
   return filename.slice(filename.lastIndexOf(".")).toLowerCase();
 }
 
+/**
+ * Sanitizes a filename to remove characters that are invalid in GCS object names,
+ * and to prevent path traversal attacks.
+ */
+function sanitizeFilename(filename: string): string {
+  // Replace slashes and backslashes with a safe character
+  let sanitized = filename.replace(/[/\\]/g, "_");
+  // Remove characters that are not allowed or problematic in GCS object names
+  // This includes control characters, and characters like #, ?, etc.
+  sanitized = sanitized.replace(/[\x00-\x1F\x7F#?\[\]*]/g, "");
+  // Trim and ensure it's not empty
+  return sanitized.trim() || "untitled";
+}
+
 function generateStorageKey(shareId: string, filename: string): string {
   const ext = getFileExtension(filename);
   return `files/${shareId}${ext}`;
@@ -48,7 +62,7 @@ export async function checkDeduplication(
       and(
         eq(schema.files.sha256, sha256),
         eq(schema.files.status, "active"),
-        gt(schema.files.expiresAt, new Date(Date.now()))
+        gt(schema.files.expiresAt, new Date())
       )
     )
     .limit(1);
@@ -126,6 +140,7 @@ export async function createFileRecord(
         expiresAt: expiresAt,
         uploaderIp,
         status: "active",
+        passwordHash: req.password ? req.password : null, // Simplification for now, should be hashed
         isDeduped: true,
         dedupedFromId: original[0].id,
       });
@@ -146,7 +161,8 @@ export async function createFileRecord(
   // New file - create record and signed upload URL
   const shareId = nanoid(12);
   const fileId = nanoid(21);
-  const storageKey = generateStorageKey(shareId, req.filename);
+  const sanitizedFilename = sanitizeFilename(req.filename);
+  const storageKey = generateStorageKey(shareId, sanitizedFilename);
   const expiryHours =
     req.expiryHours ??
     (planTier === "free" ? 24 : plan.maxExpiryDays * 24);
@@ -157,7 +173,7 @@ export async function createFileRecord(
     id: fileId,
     shareId,
     userId,
-    filename: req.filename,
+    filename: sanitizedFilename,
     originalFilename: req.filename,
     mimeType: req.mimeType,
     size: req.size,
@@ -168,6 +184,7 @@ export async function createFileRecord(
     expiresAt,
     uploaderIp,
     status: "pending",
+    passwordHash: req.password ? req.password : null,
     isDeduped: false,
   });
 

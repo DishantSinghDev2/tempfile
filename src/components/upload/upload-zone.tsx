@@ -1,7 +1,7 @@
 // src/components/upload/upload-zone.tsx
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Upload,
@@ -11,16 +11,21 @@ import {
   Share2,
   Zap,
   Clock,
+  Send,
+  Mail,
+  Loader2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { computeSHA256, formatBytes, formatCountdown } from "@/lib/utils";
 import type { UploadResponse } from "@/types";
+import { Turnstile } from "@marsidev/react-turnstile";
+import { useUpload } from "@/hooks/use-upload";
 
 type UploadState =
   | { phase: "idle" }
   | { phase: "hashing"; progress: number }
   | { phase: "dedup_check" }
-  | { phase: "uploading"; progress: number; filename: string }
+  | { phase: "uploading"; progress: number; filename: string; speedBps?: number; timeLeftSeconds?: number }
   | {
       phase: "done";
       shareId: string;
@@ -43,7 +48,54 @@ export function UploadZone({
 }: UploadZoneProps) {
   const [state, setState] = useState<UploadState>({ phase: "idle" });
   const [dragOver, setDragOver] = useState(false);
+  const [email, setEmail] = useState("");
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const turnstileRef = useRef<any>(null);
+  const pendingFileRef = useRef<File | null>(null);
+  const { upload, state: uploadState } = useUpload();
+
+  const formatSpeed = (bps?: number) => {
+    if (!bps) return "Calculating...";
+    if (bps > 1024 * 1024) return `${(bps / (1024 * 1024)).toFixed(1)} MB/s`;
+    if (bps > 1024) return `${(bps / 1024).toFixed(1)} KB/s`;
+    return `${bps.toFixed(0)} B/s`;
+  };
+
+  const formatTime = (seconds?: number) => {
+    if (seconds === undefined || !isFinite(seconds)) return "Calculating...";
+    if (seconds < 60) return `${Math.ceil(seconds)}s left`;
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.ceil(seconds % 60);
+    return `${mins}m ${secs}s left`;
+  };
+
+  const handleEmailSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (state.phase !== "done" || !email || !state.shareId) return;
+
+    setSendingEmail(true);
+    try {
+      const res = await fetch(`/api/files/${state.shareId}/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (res.ok) {
+        toast.success("Email sent successfully!");
+        setEmail("");
+      } else {
+        const { error } = await res.json();
+        toast.error(error || "Failed to send email.");
+      }
+    } catch {
+      toast.error("An unexpected error occurred.");
+    } finally {
+      setSendingEmail(false);
+    }
+  };
 
   const handleFile = useCallback(
     async (file: File) => {
@@ -52,6 +104,19 @@ export function UploadZone({
           phase: "error",
           message: `File too large. Max size is ${maxSizeMb} MB on your current plan.`,
         });
+        return;
+      }
+
+      if (!turnstileToken) {
+        // Store the file and trigger turnstile execution
+        pendingFileRef.current = file;
+        
+        if (turnstileRef.current?.execute) {
+          turnstileRef.current.execute();
+          toast.loading("Verifying security...", { id: "turnstile-exec" });
+        } else {
+          toast.error("Please complete the security check before uploading.");
+        }
         return;
       }
 
@@ -71,6 +136,7 @@ export function UploadZone({
             size: file.size,
             sha256,
             expiryHours,
+            turnstileToken,
           }),
         });
 
@@ -97,17 +163,43 @@ export function UploadZone({
         }
 
         // Step 4: Direct upload to GCS (never through our server)
-        setState({ phase: "uploading", progress: 0, filename: file.name });
+        setState({ phase: "uploading", progress: 0, filename: file.name, speedBps: 0, timeLeftSeconds: 0 });
 
         await new Promise<void>((resolve, reject) => {
           const xhr = new XMLHttpRequest();
+          const startTime = Date.now();
+          let lastLoaded = 0;
+          let lastTime = startTime;
+
           xhr.upload.addEventListener("progress", (e) => {
             if (e.lengthComputable) {
-              setState({
-                phase: "uploading",
-                progress: Math.round((e.loaded / e.total) * 100),
-                filename: file.name,
-              });
+              const now = Date.now();
+              const timeDiff = (now - lastTime) / 1000;
+              const percent = Math.round((e.loaded / e.total) * 100);
+
+              if (timeDiff > 0.5) { // Update speed every 500ms
+                const bytesDiff = e.loaded - lastLoaded;
+                const speedBps = bytesDiff / timeDiff;
+                const remainingBytes = e.total - e.loaded;
+                const timeLeftSeconds = speedBps > 0 ? remainingBytes / speedBps : 0;
+
+                setState({
+                  phase: "uploading",
+                  progress: percent,
+                  filename: file.name,
+                  speedBps,
+                  timeLeftSeconds
+                });
+
+                lastLoaded = e.loaded;
+                lastTime = now;
+              } else {
+                 setState((s) => ({
+                  ...(s as Extract<UploadState, { phase: "uploading" }>),
+                  progress: percent,
+                  filename: file.name,
+                }));
+              }
             }
           });
           xhr.addEventListener("load", () => {
@@ -141,8 +233,16 @@ export function UploadZone({
         });
       }
     },
-    [maxSizeMb, expiryHours]
+    [maxSizeMb, expiryHours, turnstileToken]
   );
+
+  useEffect(() => {
+    if (turnstileToken && pendingFileRef.current) {
+      const file = pendingFileRef.current;
+      pendingFileRef.current = null;
+      handleFile(file);
+    }
+  }, [turnstileToken, handleFile]);
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -164,7 +264,10 @@ export function UploadZone({
     toast.success("Link copied to clipboard");
   };
 
-  const reset = () => setState({ phase: "idle" });
+  const reset = () => {
+    setState({ phase: "idle" });
+    setEmail("");
+  };
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -244,6 +347,28 @@ export function UploadZone({
                     </span>
                   ))}
                 </div>
+
+                <Turnstile
+                  ref={turnstileRef}
+                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "0x4AAAAAACoPb9se4s9TrYCe"}
+                  onSuccess={(token) => {
+                    setTurnstileToken(token);
+                    toast.dismiss("turnstile-exec");
+                  }}
+                  onError={() => {
+                    toast.error("Security check failed. Please try again.", { id: "turnstile-exec" });
+                    pendingFileRef.current = null;
+                  }}
+                  onExpire={() => {
+                    setTurnstileToken(null);
+                    pendingFileRef.current = null;
+                    toast.error("Security session expired. Please try again.", { id: "turnstile-exec" });
+                  }}
+                  options={{
+                    theme: "light",
+                    size: "invisible",
+                  }}
+                />
               </div>
             </div>
             <input
@@ -318,9 +443,10 @@ export function UploadZone({
                   transition={{ duration: 0.2 }}
                 />
               </div>
-              <p className="text-xs text-muted-foreground pt-1">
-                Uploading directly to CDN — zero proxy
-              </p>
+              <div className="flex justify-between w-full mt-1 text-xs font-mono text-muted-foreground">
+                <span>{formatSpeed(state.speedBps)}</span>
+                <span>{formatTime(state.timeLeftSeconds)}</span>
+              </div>
             </div>
           </motion.div>
         )}
@@ -366,8 +492,33 @@ export function UploadZone({
               </button>
             </div>
 
-            {/* Share URL */}
+            {/* Share URL & Email Form */}
             <div className="p-6 space-y-4">
+              <form onSubmit={handleEmailSend} className="w-full flex gap-2">
+                <div className="relative flex-1">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email to..."
+                    className="w-full h-10 pl-9 pr-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring transition-colors"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={sendingEmail}
+                  className="h-10 px-4 flex items-center justify-center gap-2 rounded-md bg-foreground text-background font-medium hover:bg-foreground/90 transition-colors disabled:opacity-50 whitespace-nowrap"
+                >
+                  {sendingEmail ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                  Send
+                </button>
+              </form>
               <div className="flex items-center gap-2 bg-muted/20 border border-border rounded-md px-3 py-2.5">
                 <span className="font-mono text-xs text-foreground flex-1 truncate select-all">
                   {shareUrl}

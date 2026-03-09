@@ -3,7 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { createFileRecord } from "@/lib/file-service";
 import { checkRateLimit, trackAbuseScore } from "@/lib/rate-limit";
-import { getClientIp } from "@/lib/utils";
+import { getClientIp, verifyTurnstile } from "@/lib/utils";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import type { UploadRequest, ApiResponse, UploadResponse } from "@/types";
 import { z } from "zod";
 
@@ -14,17 +15,46 @@ const uploadSchema = z.object({
   sha256: z.string().length(64).regex(/^[a-f0-9]+$/),
   expiryHours: z.number().int().min(1).max(8760).optional(),
   maxDownloads: z.number().int().min(1).max(1000).nullable().optional(),
+  turnstileToken: z.string().min(1),
+  password: z.string().min(1).max(100).optional().nullable(),
 });
 
 export async function POST(
   request: NextRequest
 ): Promise<NextResponse<ApiResponse<UploadResponse>>> {
   const ip = getClientIp(request);
+  const { env } = getCloudflareContext();
 
   try {
     const session = await auth();
     const userId = session?.user?.id ?? null;
     const planTier = (session?.user as { planTier?: string })?.planTier ?? "free";
+
+    const body = await request.json();
+    const parsed = uploadSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { success: false, error: "Invalid request", code: "VALIDATION_ERROR" },
+        { status: 400 }
+      );
+    }
+
+    // Verify Turnstile
+    const isHuman = await verifyTurnstile(
+      parsed.data.turnstileToken,
+      env.TURNSTILE_SECRET_KEY
+    );
+    if (!isHuman) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Bot detected. Please complete the captcha.",
+          code: "BOT_DETECTED",
+        },
+        { status: 403 }
+      );
+    }
 
     // Rate limiting
     const rateLimit = await checkRateLimit(ip, planTier !== "free");
@@ -41,15 +71,7 @@ export async function POST(
       );
     }
 
-    const body = await request.json();
-    const parsed = uploadSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json(
-        { success: false, error: "Invalid request", code: "VALIDATION_ERROR" },
-        { status: 400 }
-      );
-    }
+    const { data: uploadRequest } = parsed;
 
     const uploadReq: UploadRequest = parsed.data;
 

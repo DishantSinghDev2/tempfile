@@ -16,6 +16,8 @@ out/
 .env.production
 .env.*.local
 .dev.vars
+gcs-key.json
+cors-config.json
 
 # Cloudflare
 .wrangler/
@@ -33,3 +35,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 cloudflare-env.d.ts
+
+wrangler.jsonc

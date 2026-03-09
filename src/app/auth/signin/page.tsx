@@ -4,7 +4,7 @@ import { SignInButtons } from "./signin-buttons";
 import { Upload } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Sign In — TempFile",
+  title: "Sign In — Temp File",
   robots: { index: false },
 };
 
@@ -19,7 +19,7 @@ export default function SignInPage() {
           </div>
           <div className="text-center">
             <h1 className="text-xl font-semibold tracking-tight text-foreground">
-              Sign in to TempFile
+              Sign in to Temp File
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               File history, extended expiry, and API access

@@ -4,8 +4,14 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import * as schema from "./schema";
 
 export function getDb() {
-  const ctx = getCloudflareContext();
-  return drizzle(ctx.env.DB, { schema });
+  try {
+    const ctx = getCloudflareContext();
+    return drizzle(ctx.env.DB, { schema });
+  } catch (err) {
+    // Fallback or handle build time
+    console.warn("getDb called outside of request context");
+    throw err;
+  }
 }
 
 export type DB = ReturnType<typeof getDb>;

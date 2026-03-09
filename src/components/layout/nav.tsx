@@ -17,33 +17,44 @@ export function Nav() {
       <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-foreground rounded-sm flex items-center justify-center">
-            <Upload className="h-3 w-3 text-background" strokeWidth={2.5} />
+          <div className="flex flex-col">
+            <div className="flex items-center">
+              <div className="w-6 h-6 bg-foreground rounded-sm flex items-center justify-center">
+                <Upload className="h-3 w-3 text-background" strokeWidth={2.5} />
+              </div>
+              <span className="ml-2 font-mono text-sm font-semibold tracking-tight text-foreground">
+                Temp File
+              </span>
+            </div>
+            <span className="text-xs text-muted-foreground -mt-1 ml-8">by FCE</span>
           </div>
-          <span className="font-mono text-sm font-semibold tracking-tight text-foreground">
-            TempFile
-          </span>
         </Link>
 
         {/* Nav links */}
         <nav className="hidden md:flex items-center gap-6">
           <Link
-            href="/pricing"
+            href="/use-cases"
             className="text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
           >
-            Pricing
+            Use Cases
           </Link>
           <Link
-            href="/blog"
+            href="/alternatives"
             className="text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
           >
-            Blog
+            Alternatives
           </Link>
           <Link
             href="/docs"
             className="text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
           >
-            Docs
+            Playground
+          </Link>
+          <Link
+            href="/pricing"
+            className="text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Pricing
           </Link>
         </nav>
 

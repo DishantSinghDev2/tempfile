@@ -23,13 +23,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .limit(1);
 
   if (results.length === 0) {
-    return { title: "File Not Found | TempFile" };
+    return { title: "File Not Found | Temp File" };
   }
 
   const file = results[0];
   return {
-    title: `${file.filename} (${formatBytes(file.size)}) | TempFile`,
-    description: `Download ${file.filename} (${formatBytes(file.size)}) — Shared via TempFile. Auto-deleting secure file share.`,
+    title: `${file.filename} (${formatBytes(file.size)}) | Temp File`,
+    description: `Download ${file.filename} (${formatBytes(file.size)}) — Shared via Temp File. Auto-deleting secure file share.`,
     robots: { index: false, follow: false },
   };
 }
@@ -59,7 +59,7 @@ export default async function SharePage({ params }: Props) {
       {/* Minimal nav */}
       <header className="border-b border-border px-6 h-14 flex items-center">
         <a href="/" className="font-mono text-sm font-semibold text-foreground">
-          TempFile
+          Temp File
         </a>
       </header>
 
@@ -82,7 +82,7 @@ export default async function SharePage({ params }: Props) {
 
       <footer className="border-t border-border px-6 py-4 flex items-center justify-between">
         <p className="font-mono text-[10px] text-muted-foreground">
-          TempFile — Ephemeral file sharing
+          Temp File — Ephemeral file sharing
         </p>
         <a
           href="/pricing"

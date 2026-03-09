@@ -10,7 +10,7 @@ import { Files, HardDrive, Download, ArrowRight } from "lucide-react";
 import { getPlan } from "@/lib/plans";
 
 export const metadata: Metadata = {
-  title: "Dashboard — TempFile",
+  title: "Dashboard — Temp File",
   robots: { index: false },
 };
 

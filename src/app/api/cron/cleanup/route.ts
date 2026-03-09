@@ -9,8 +9,9 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 export async function GET(request: NextRequest) {
   // Verify cron secret to prevent unauthorized calls
+  const { env } = getCloudflareContext();
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (authHeader !== `Bearer ${env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -51,19 +52,20 @@ export async function GET(request: NextRequest) {
     )
     .limit(100); // Batch to avoid timeout
 
-  const { env } = getCloudflareContext();
-
   for (const file of toDelete) {
     try {
       // Remove from R2 if it was promoted
-      if (file.storageTier === "r2_hot") {
+      if (file.storageTier === "r2_hot" && env?.FILE_BUCKET) {
         await env.FILE_BUCKET.delete(file.storageKey);
       }
+      
       // GCS deletion happens via a separate scheduled GCS lifecycle rule
       // (GCS Object Lifecycle Management handles actual GCS deletions)
 
       // Remove dedup cache entry
-      await env.DEDUP_KV.delete(`hash:${file.sha256}`);
+      if (env?.DEDUP_KV) {
+        await env.DEDUP_KV.delete(`hash:${file.sha256}`);
+      }
 
       // Mark as deleted in DB
       await db
@@ -71,12 +73,12 @@ export async function GET(request: NextRequest) {
         .set({ status: "deleted", deletedAt: now })
         .where(eq(schema.files.id, file.id));
 
-      // Decrement user's active storage
+      // Decrement user's active storage securely (SQLite MAX() function handling)
       if (file.userId) {
         await db
           .update(schema.users)
           .set({
-            activeStorageBytes: sql`max(0, ${schema.users.activeStorageBytes} - ${file.size})`,
+            activeStorageBytes: sql`CASE WHEN ${schema.users.activeStorageBytes} - ${file.size} < 0 THEN 0 ELSE ${schema.users.activeStorageBytes} - ${file.size} END`,
           })
           .where(eq(schema.users.id, file.userId));
       }

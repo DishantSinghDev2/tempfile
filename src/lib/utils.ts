@@ -58,3 +58,28 @@ export async function computeSHA256(file: File): Promise<string> {
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
+
+export async function verifyTurnstile(
+  token: string,
+  secretKey: string
+): Promise<boolean> {
+  try {
+    const formData = new FormData();
+    formData.append("secret", secretKey);
+    formData.append("response", token);
+
+    const result = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const outcome: any = await result.json();
+    return outcome.success === true;
+  } catch (err) {
+    console.error("Turnstile verification failed:", err);
+    return false;
+  }
+}

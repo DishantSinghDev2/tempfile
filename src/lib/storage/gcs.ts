@@ -106,28 +106,33 @@ async function generateV4SignedUrl(params: {
   const credentialScope = `${datestamp}/auto/storage/goog4_request`;
   const credential = `${serviceAccount.client_email}/${credentialScope}`;
 
-  const queryParams = new URLSearchParams({
+  const queryParams: Record<string, string> = {
     "X-Goog-Algorithm": "GOOG4-RSA-SHA256",
     "X-Goog-Credential": credential,
     "X-Goog-Date": timestamp,
     "X-Goog-Expires": String(expiration - Math.floor(Date.now() / 1000)),
     "X-Goog-SignedHeaders": contentType ? "content-type;host" : "host",
-  });
+  };
 
   if (responseContentDisposition) {
-    queryParams.set("response-content-disposition", responseContentDisposition);
+    queryParams["response-content-disposition"] = responseContentDisposition;
   }
 
-  const canonicalUri = `/${object}`;
+  const canonicalUri = `/${bucket}/${object.split("/").map(encodeURIComponent).join("/")}`;
   const canonicalHeaders = contentType
     ? `content-type:${contentType}\nhost:storage.googleapis.com\n`
     : `host:storage.googleapis.com\n`;
   const signedHeaders = contentType ? "content-type;host" : "host";
 
+  const sortedQuery = Object.keys(queryParams)
+    .sort()
+    .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(queryParams[key])}`)
+    .join("&");
+
   const canonicalRequest = [
     method,
     canonicalUri,
-    queryParams.toString(),
+    sortedQuery,
     canonicalHeaders,
     signedHeaders,
     "UNSIGNED-PAYLOAD",
@@ -175,9 +180,9 @@ async function generateV4SignedUrl(params: {
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 
-  queryParams.set("X-Goog-Signature", signatureHex);
+  const finalQueryParams = `${sortedQuery}&X-Goog-Signature=${signatureHex}`;
 
-  return `https://storage.googleapis.com/${bucket}/${encodeURIComponent(object)}?${queryParams.toString()}`;
+  return `https://storage.googleapis.com${canonicalUri}?${finalQueryParams}`;
 }
 
 /**

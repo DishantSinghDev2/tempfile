@@ -5,14 +5,18 @@ import { Upload } from "lucide-react";
 const links = {
   Product: [
     { label: "Pricing", href: "/pricing" },
-    { label: "API", href: "/docs" },
+    { label: "Playground", href: "/docs" },
     { label: "Blog", href: "/blog" },
-    { label: "Changelog", href: "/changelog" },
+    { label: "Use Cases", href: "/use-cases" },
+    { label: "Alternatives", href: "/alternatives" },
+    { label: "Comparison", href: "/comparison" },
   ],
   Legal: [
     { label: "Privacy Policy", href: "/policies/privacy" },
     { label: "Terms of Service", href: "/policies/terms" },
     { label: "Refund Policy", href: "/policies/refund" },
+    { label: "Copyright Policy", href: "/policies/copyright" },
+    { label: "Compliance & Security", href: "/policies/compliance" },
   ],
 };
 
@@ -27,7 +31,7 @@ export function Footer() {
               <div className="w-6 h-6 bg-foreground rounded-sm flex items-center justify-center">
                 <Upload className="h-3 w-3 text-background" strokeWidth={2.5} />
               </div>
-              <span className="font-mono text-sm font-semibold text-foreground">TempFile</span>
+              <span className="font-mono text-sm font-semibold text-foreground">Temp File</span>
             </Link>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Instant, secure, ephemeral file sharing. Files auto-delete. No tracking.
@@ -67,7 +71,7 @@ export function Footer() {
 
         <div className="border-t border-border mt-12 pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <p className="font-mono text-[10px] text-muted-foreground">
-            © {new Date().getFullYear()} TempFile. All rights reserved.
+            © {new Date().getFullYear()} Temp File. All rights reserved.
           </p>
           <p className="font-mono text-[10px] text-muted-foreground">
             Powered by Cloudflare Workers + GCS

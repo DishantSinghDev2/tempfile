@@ -12,6 +12,8 @@ import {
   Clock,
   Loader2,
   QrCode,
+  Send,
+  Mail,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { formatBytes } from "@/lib/utils";
@@ -25,6 +27,9 @@ interface Props {
 
 export function SharePageClient({ shareId, file }: Props) {
   const [downloading, setDownloading] = useState(false);
+  const [showEmailForm, setShowEmailForm] = useState(false);
+  const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
   const countdown = useCountdown(file.expiresAt);
 
   const handleDownload = () => {
@@ -37,6 +42,33 @@ export function SharePageClient({ shareId, file }: Props) {
     const url = `${window.location.origin}/f/${shareId}`;
     navigator.clipboard.writeText(url);
     toast.success("Link copied");
+  };
+
+  const handleEmailSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setSending(true);
+    try {
+      const res = await fetch(`/api/files/${shareId}/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (res.ok) {
+        toast.success("Email sent successfully!");
+        setShowEmailForm(false);
+        setEmail("");
+      } else {
+        const { error } = await res.json();
+        toast.error(error || "Failed to send email.");
+      }
+    } catch {
+      toast.error("An unexpected error occurred.");
+    } finally {
+      setSending(false);
+    }
   };
 
   if (file.isExpired || countdown.expired) {
@@ -53,7 +85,7 @@ export function SharePageClient({ shareId, file }: Props) {
         <div className="space-y-2">
           <h1 className="text-lg font-semibold text-foreground">File expired</h1>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            This file was auto-deleted. TempFile links expire to protect your privacy.
+            This file was auto-deleted. Temp File links expire to protect your privacy.
           </p>
         </div>
         <a
@@ -154,12 +186,46 @@ export function SharePageClient({ shareId, file }: Props) {
             >
               <QrCode className="h-4 w-4" />
             </button>
+            <button
+              onClick={() => setShowEmailForm(true)}
+              className="h-9 w-9 flex items-center justify-center border border-border text-muted-foreground rounded-md hover:bg-muted hover:text-foreground transition-colors"
+              title="Share via Email"
+            >
+              <Mail className="h-4 w-4" />
+            </button>
           </div>
+
+          {showEmailForm && (
+            <form
+              onSubmit={handleEmailSend}
+              className="flex gap-2 p-3 border border-border rounded-md bg-muted/30"
+            >
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Recipient's email..."
+                className="flex-1 h-9 px-3 text-xs bg-transparent border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-ring"
+                required
+              />
+              <button
+                type="submit"
+                disabled={sending}
+                className="h-9 w-9 flex items-center justify-center bg-foreground text-background rounded-md hover:opacity-90 transition-opacity disabled:opacity-60"
+              >
+                {sending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </button>
+            </form>
+          )}
         </div>
 
         <div className="border-t border-border px-6 py-3 flex items-center justify-between">
           <p className="font-mono text-[10px] text-muted-foreground">
-            Powered by <a href="/" className="text-foreground hover:underline underline-offset-2">TempFile</a>
+            Powered by <a href="/" className="text-foreground hover:underline underline-offset-2">Temp File</a>
           </p>
           <a href="/" className="font-mono text-[10px] text-muted-foreground hover:text-foreground transition-colors">
             Share your own →
