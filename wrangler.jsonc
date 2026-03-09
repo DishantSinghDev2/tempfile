@@ -1,0 +1,71 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "tempfile",
+	"routes": [
+		{
+			"pattern": "tfile.freecustom.email",
+			"custom_domain": true
+		}
+	],
+	"main": ".open-next/worker.js",
+	"compatibility_date": "2025-05-05",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	"services": [
+		{
+			"binding": "WORKER_SELF_REFERENCE",
+			"service": "tempfile"
+		}
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "tempfile-db",
+			"database_id": "836d0c7d-0996-4a14-8c09-80a6dfb59634",
+			"migrations_dir": "drizzle"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "NEXT_INC_CACHE_R2_BUCKET",
+			"bucket_name": "tempfile-cache"
+		},
+		{
+			"binding": "FILE_BUCKET",
+			"bucket_name": "tempfile-files",
+			"preview_bucket_name": "tempfile-files-dev"
+		}
+	],
+	"triggers": {
+		"crons": [
+			"0 * * * *"
+		]
+	},
+	"vars": {
+		"NEXT_PUBLIC_APP_URL": "https://tfile.freecustom.email",
+		"NEXT_PUBLIC_APP_NAME": "TempFile",
+		"GCS_BUCKET_NAME": "tempfile-uploads-v2",
+		"GCS_PROJECT_ID": "dishis-technologies",
+		"MAX_FREE_FILE_SIZE": "104857600",
+		"MAX_PRO_FILE_SIZE": "5368709120",
+		"FREE_EXPIRY_HOURS": "24",
+		"PRO_EXPIRY_DAYS": "30",
+		"PADDLE_ENVIRONMENT": "production"
+	},
+	"dev": {
+		"port": 3000,
+		"local_protocol": "http"
+	},
+	"kv_namespaces": [
+		{
+			"binding": "DEDUP_KV",
+			"id": "adabff9dcecf49a5a950f83c3dc9d1f4",
+			"remote": true
+		}
+	]
+}

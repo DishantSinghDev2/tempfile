@@ -1,0 +1,36 @@
+# docker-compose.yml
+# Local development environment for TempFile
+
+services:
+  app:
+    build:
+      context: .
+      target: dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    env_file:
+      - .env.local
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
+
+  # Preview mode - mimics CF Workers runtime
+  preview:
+    build:
+      context: .
+      target: preview
+    ports:
+      - "8787:8787"
+    env_file:
+      - .dev.vars
+    environment:
+      - NODE_ENV=production
+    profiles:
+      - preview
+
+volumes:
+  node_modules:

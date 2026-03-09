@@ -1,0 +1,22 @@
+# docker/gcs-cors.json
+# Apply with: gcloud storage buckets update gs://YOUR_BUCKET --cors-file=docker/gcs-cors.json
+
+[
+  {
+    "origin": [
+      "https://tempfile.io",
+      "https://*.tempfile.io",
+      "http://localhost:3000",
+      "http://localhost:8787"
+    ],
+    "method": ["PUT", "GET", "HEAD", "OPTIONS"],
+    "responseHeader": [
+      "Content-Type",
+      "Content-Length",
+      "Content-Disposition",
+      "Access-Control-Allow-Origin",
+      "ETag"
+    ],
+    "maxAgeSeconds": 3600
+  }
+]
