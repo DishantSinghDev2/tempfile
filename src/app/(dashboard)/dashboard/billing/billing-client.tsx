@@ -147,7 +147,7 @@ export function BillingClient({
               </div>
 
               <div className="space-y-0 flex-1">
-                {plan.features.slice(0, 5).map((f) => (
+                {plan.features.map((f) => (
                   <div
                     key={f}
                     className="border-t border-border py-2 flex items-start gap-2"
