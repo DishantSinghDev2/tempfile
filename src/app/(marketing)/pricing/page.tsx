@@ -199,6 +199,18 @@ export default function PricingPage() {
                       values: [false, false, true, true],
                     },
                     {
+                      label: "Custom forms",
+                      values: [false, false, true, true],
+                    },
+                    {
+                      label: "Donate buttons",
+                      values: [false, true, true, true],
+                    },
+                    {
+                      label: "Custom styling",
+                      values: [false, false, true, true],
+                    },
+                    {
                       label: "API access",
                       values: [false, false, true, true],
                     },

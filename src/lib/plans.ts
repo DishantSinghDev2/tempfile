@@ -45,6 +45,8 @@ export const PLANS: Plan[] = [
       "File history",
       "Custom expiry",
       "Priority CDN (R2 hot tier)",
+      "Custom download page",
+      "Donate buttons",
     ],
   },
   {
@@ -66,9 +68,10 @@ export const PLANS: Plan[] = [
       "Unlimited downloads",
       "500 credits/month",
       "Password protection",
+      "Custom forms",
       "Download analytics",
+      "Advanced styling",
       "API access",
-      "Priority support",
     ],
   },
   {

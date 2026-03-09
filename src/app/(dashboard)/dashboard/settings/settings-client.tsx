@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
-import { Sun, Moon, Monitor, LogOut, Trash2 } from "lucide-react";
+import { Sun, Moon, Monitor, LogOut, Trash2, Palette, Save, Loader2, Heart } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface UserData {
@@ -14,11 +14,39 @@ interface UserData {
   image?: string;
   planTier: string;
   createdAt: string;
+  defaultCustomization: string | null;
 }
 
 export function SettingsClient({ user }: { user: UserData }) {
   const { theme, setTheme } = useTheme();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [customization, setCustomization] = useState(() => {
+    if (user.defaultCustomization) {
+      return JSON.parse(user.defaultCustomization);
+    } 
+    return { donateButtonUrl: "", customText: "" };
+  });
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/account/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ defaultCustomization: customization }),
+      });
+      if (res.ok) {
+        toast.success("Global settings saved");
+      } else {
+        throw new Error("Failed to save");
+      }
+    } catch {
+      toast.error("An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDeleteAccount = async () => {
     const res = await fetch("/api/account", { method: "DELETE" });
@@ -160,10 +188,51 @@ export function SettingsClient({ user }: { user: UserData }) {
         </button>
       </section>
 
+      {user.planTier !== "free" && (
+        <section className="border-t border-border py-8">
+          <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-6">
+            05 — Global Download Page
+          </h2>
+          <div className="space-y-6 max-w-sm">
+            <p className="text-xs text-muted-foreground">
+              Set default styles and a donate link that apply to all your file pages. You can override these on a per-file basis.
+            </p>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-mono uppercase text-muted-foreground flex items-center gap-1">
+                <Heart className="h-2 w-2" /> Default Donate URL
+              </label>
+              <input 
+                value={customization.donateButtonUrl}
+                onChange={(e) => setCustomization({ ...customization, donateButtonUrl: e.target.value })}
+                placeholder="https://buymeacoffee.com/..."
+                className="w-full h-9 px-3 text-xs bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-ring"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-mono uppercase text-muted-foreground">Default Custom Message</label>
+              <textarea 
+                value={customization.customText}
+                onChange={(e) => setCustomization({ ...customization, customText: e.target.value })}
+                placeholder="Thanks for downloading!"
+                className="w-full h-20 p-3 text-xs bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-ring"
+              />
+            </div>
+            <button
+              onClick={handleSave}
+              disabled={loading}
+              className="h-9 px-4 flex items-center justify-center gap-2 text-xs font-mono bg-foreground text-background rounded-md hover:opacity-90 transition-opacity disabled:opacity-60"
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              Save Global Settings
+            </button>
+          </div>
+        </section>
+      )}
+
       {/* Danger zone */}
       <section className="border-t border-border py-8">
         <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-6">
-          05 — Danger Zone
+          06 — Danger Zone
         </h2>
         {!showDeleteConfirm ? (
           <div className="space-y-3">

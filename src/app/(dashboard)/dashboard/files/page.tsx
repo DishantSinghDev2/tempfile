@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 export default async function FilesPage() {
   const session = await auth();
   const userId = session!.user!.id!;
+  const planTier = (session!.user as any).planTier || "free";
 
   const files = await getUserFiles(userId, 1, 50);
 
@@ -66,7 +67,7 @@ export default async function FilesPage() {
             </thead>
             <tbody>
               {files.map((file) => (
-                <FileRow key={file.id} file={file} />
+                <FileRow key={file.id} file={file} planTier={planTier} />
               ))}
             </tbody>
           </table>

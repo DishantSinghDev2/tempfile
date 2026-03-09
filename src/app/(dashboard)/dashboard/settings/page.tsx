@@ -40,6 +40,7 @@ export default async function SettingsPage() {
           image: session!.user!.image ?? undefined,
           planTier: user?.planTier ?? "free",
           createdAt: user?.createdAt?.toISOString() ?? new Date().toISOString(),
+          defaultCustomization: user?.defaultCustomization || null,
         }}
       />
     </div>

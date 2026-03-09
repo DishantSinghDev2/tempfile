@@ -3,22 +3,26 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Copy, Trash2, ExternalLink } from "lucide-react";
+import { Copy, Trash2, ExternalLink, Settings } from "lucide-react";
 import toast from "react-hot-toast";
 import { formatBytes, formatCountdown } from "@/lib/utils";
 import type { File } from "@/lib/db/schema";
+import type { PlanTier } from "@/types";
 
 interface Props {
   file: File;
+  planTier: PlanTier;
 }
 
-export function FileRow({ file }: Props) {
+export function FileRow({ file, planTier }: Props) {
   const [deleted, setDeleted] = useState(false);
 
   const isExpired =
     file.expiresAt < new Date() ||
     file.status === "expired" ||
     file.status === "deleted";
+
+  const isPaid = planTier !== "free";
 
   const copyLink = () => {
     navigator.clipboard.writeText(`${window.location.origin}/f/${file.shareId}`);
@@ -76,6 +80,15 @@ export function FileRow({ file }: Props) {
         <div className="flex items-center gap-1.5 justify-end">
           {!isExpired && (
             <>
+              {isPaid && (
+                <Link
+                  href={`/dashboard/files/${file.id}`}
+                  className="h-7 w-7 flex items-center justify-center rounded border border-border hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                  title="Manage"
+                >
+                  <Settings className="h-3 w-3" />
+                </Link>
+              )}
               <button
                 onClick={copyLink}
                 className="h-7 w-7 flex items-center justify-center rounded border border-border hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"

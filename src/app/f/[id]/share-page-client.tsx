@@ -3,6 +3,15 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import {
+  Download,
+  FileText,
+  Copy,
+  X,
+  ShieldOff,
+  Clock,
+  Loader2,
+  QrCode,
   Send,
   Mail,
   Lock,
