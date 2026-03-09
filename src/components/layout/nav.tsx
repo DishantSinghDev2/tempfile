@@ -48,6 +48,12 @@ export function Nav() {
             href="/docs"
             className="text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
           >
+            Docs
+          </Link>
+          <Link
+            href="/playground"
+            className="text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+          >
             Playground
           </Link>
           <Link
